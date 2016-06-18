@@ -77,7 +77,7 @@ exports.remoteIP = function (req, callback) {
     var matches = header.match(REG_IP);
 
     if (matches) {
-        return callback(null, matches[0]);
+        return callback(matches[0]);
     }
 
     howdo

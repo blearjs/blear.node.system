@@ -1,6 +1,6 @@
 {
   "name": "blear.node.system",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "node 系统信息",
   "scripts": {
     "live": "browser-sync start --config bs-config.js",
