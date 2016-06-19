@@ -73,11 +73,15 @@ exports.remoteIP = function (req, callback) {
     }
 
     req.headers = req.headers || {};
-    var header = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || '';
+    var header = req.headers['x-real-ip'] ||
+        req.headers['x-forwarded-for'] ||
+        req.headers['remote-ip'] ||
+        req.headers['remoteip'] ||
+        req.ip || '';
     var matches = header.match(REG_IP);
 
     if (matches) {
-        return callback(matches[0]);
+        return callback(matches[0].split(',').pop().trim());
     }
 
     howdo
