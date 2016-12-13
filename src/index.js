@@ -25,6 +25,7 @@ var winReleaseMap = require('./_win-release.json');
 var IP_138 = 'http://1111.ip138.com/ic.asp';
 var IP_T086 = 'http://ip.t086.com/getip.php';
 var IP_QQ = 'http://ip.qq.com/';
+var IP_TAOBAO = 'http://ip.taobao.com/service/getIpInfo2.php';
 var IP_LOOKUP = 'http://int.dpool.sina.com.cn/iplookup/iplookup.php';
 var REG_IP = /\d{1,3}(\.\d{1,3}){3}/;
 
@@ -85,22 +86,27 @@ exports.remoteIP = function (req, callback) {
     }
 
     howdo
-    // 从 IP_QQ 处获取
+    // 从 IP_TAOBAO 处获取
         .task(function (done) {
             request({
-                url: IP_QQ
+                url: IP_TAOBAO,
+                query: {
+                    ip: 'myip'
+                }
             }, function (err, body) {
                 if (err) {
                     return done(err);
                 }
 
-                var matches = body.match(REG_IP);
+                var json = {};
 
-                if (!matches) {
-                    return done(new Error('empty'));
+                try {
+                    json = JSON.parse(body);
+                } catch (err) {
+                    // ignore
                 }
 
-                done(null, matches[0]);
+                done(null, json.data && json.data.ip);
             });
         })
 
@@ -111,26 +117,29 @@ exports.remoteIP = function (req, callback) {
 
 
 /**
- * 获取系统信息
- * @returns {{}}
+ * 获取操作系统信息，因为操作系统信息可变的，因此是一个函数
+ * @returns {{cpus:Number, hostname:String, platform:String, release:String, alias:String, name: string, arch:String, username: String, language:String, node:string, isUnknow: boolean, isMac: boolean, isWindows: boolean, isLinux: boolean}}
  */
-exports.info = function (callback) {
-    getGlobalNodeModules(function (modules) {
-        callback({
-            cpus: os.cpus().length,
-            platform: os.platform(),
-            hostname: os.hostname(),
-            release: os.release(),
-            os: parseOS(),
-            arch: os.arch(),
-            username: process.env.LOGNAME || process.env.USER || 'unkown',
-            pid: process.pid,
-            language: getOSlanguage(),
-            node: process.version.replace(/^v/i, '').trim(),
-            npm: getNPMVersion(),
-            modules: modules
-        });
-    });
+exports.os = function () {
+    // 0=unknow,1=mac,2=windows,3=linux
+    var osType = parseOSType();
+    var osAlias = parseOSAlias();
+    return {
+        cpus: os.cpus().length,
+        hostname: os.hostname(),
+        platform: os.platform(),
+        release: os.release(),
+        alias: osAlias,
+        name: ['unknow', 'mac', 'windows', 'linux'][osType],
+        arch: os.arch(),
+        username: process.env.LOGNAME || process.env.USER || 'unkown',
+        language: getOSlanguage(),
+        node: process.version.replace(/^v/i, '').trim(),
+        isUnknow: osType === 0,
+        isMac: osType === 1,
+        isWindows: osType === 2,
+        isLinux: osType === 3
+    };
 };
 
 
@@ -140,27 +149,12 @@ exports.info = function (callback) {
  * @param callback
  */
 exports.parseIP = function (ip, callback) {
-    var args = access.args(arguments);
-
-    if (args.length === 1) {
-        callback = args[0];
-        ip = null;
-    }
-
     howdo
         .task(function (next) {
-            var req = typeis.Object(ip) ? ip : {
-                ip: ip
-            };
-
-            exports.remoteIP(req, next);
-        })
-        .task(function (next, ip) {
             request({
-                url: IP_LOOKUP,
+                url: IP_TAOBAO,
                 query: {
-                    ip: ip,
-                    format: 'json'
+                    ip: ip
                 }
             }, function (err, body) {
                 var ret = {};
@@ -175,10 +169,14 @@ exports.parseIP = function (ip, callback) {
                     ret = {};
                 }
 
+                ret = ret.data || {};
+
                 next(null, {
-                    country: ret.country || '',
-                    province: ret.province || '',
-                    city: ret.city || '',
+                    area: ret.area || '未知',
+                    country: ret.country || '未知',
+                    province: ret.region || '未知',
+                    city: ret.city || '未知',
+                    isp: ret.isp || '未知',
                     ip: ip
                 });
             });
@@ -190,9 +188,29 @@ exports.parseIP = function (ip, callback) {
 
 
 /**
+ * 解析系统类型
+ */
+function parseOSType() {
+    switch (os.platform()) {
+        case 'darwin':
+            return 1;
+
+        case 'win32':
+        case 'win64':
+        case 'win':
+            return 2;
+
+        case 'linux':
+            return 3;
+    }
+
+    return 0;
+}
+
+/**
  * 解析系统名称
  */
-function parseOS() {
+function parseOSAlias() {
     var release = os.release();
     switch (os.platform()) {
         case 'darwin':
@@ -257,38 +275,3 @@ function getOSlanguage() {
     return locale || 'EN:UTF-8';
 }
 
-
-/**
- * 同步获取 NPM 版本
- * @returns {string}
- */
-function getNPMVersion() {
-    try {
-        return childProcess.execSync('npm --version').toString().trim();
-    } catch (err) {
-        return '0.0.0';
-    }
-}
-
-
-/**
- * 同步获取全局安装的 node 模块
- * @param callback
- */
-function getGlobalNodeModules(callback) {
-    childProcess.exec('npm list --global --depth 0', function (err, stdout, stderr) {
-        var listArr = stdout.split('\n');
-        var REG = /\s([a-z\d][a-z\d_\.\-]*)@(.*)$/;
-        var ret = {};
-
-        listArr.forEach(function (item) {
-            var mathes = item.match(REG);
-
-            if (mathes) {
-                ret[mathes[1].trim()] = mathes[2].trim();
-            }
-        });
-
-        callback(ret);
-    });
-}

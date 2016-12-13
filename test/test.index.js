@@ -22,11 +22,9 @@ describe('测试文件', function () {
         });
     });
 
-    it('.info', function (done) {
-        system.info(function (info) {
-            console.log(info);
-            done();
-        });
+    it('.os', function (done) {
+        console.log(system.os());
+        done();
     });
 
     it('.parseIP', function (done) {
