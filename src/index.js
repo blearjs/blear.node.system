@@ -77,8 +77,7 @@ exports.remoteIP = function (req, callback) {
     var header = req.headers['x-real-ip'] ||
         req.headers['x-forwarded-for'] ||
         req.headers['remote-ip'] ||
-        req.headers['remoteip'] ||
-        req.ip || '';
+        req.headers['remoteip'] || '';
     var matches = header.match(REG_IP);
 
     if (matches) {
