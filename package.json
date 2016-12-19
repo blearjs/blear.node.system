@@ -1,6 +1,6 @@
 {
   "name": "blear.node.system",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "node 系统信息",
   "scripts": {
     "live": "browser-sync start --config bs-config.js",
@@ -38,22 +38,17 @@
     "url": "https://github.com/blearjs/blear.node.system/issues"
   },
   "dependencies": {
-    "blear.node.request": "^1.0.1",
-    "blear.polyfills.array": "^1.0.4",
-    "blear.polyfills.date": "^1.0.1",
-    "blear.polyfills.object": "^1.0.1",
-    "blear.polyfills.string": "^1.0.1",
-    "blear.polyfills.time": "^1.0.3",
-    "blear.utils.access": "^1.0.2",
-    "blear.utils.array": "^1.0.6",
-    "blear.utils.collection": "^1.0.3",
-    "blear.utils.date": "^1.0.2",
-    "blear.utils.howdo": "^1.0.2",
-    "blear.utils.number": "^1.0.1",
-    "blear.utils.object": "^1.0.2",
-    "blear.utils.string": "^1.0.3",
-    "blear.utils.time": "^1.0.2",
-    "blear.utils.typeis": "^1.0.2"
+    "blear.node.request": "1.x",
+    "blear.utils.access": "1.x",
+    "blear.utils.array": "1.x",
+    "blear.utils.collection": "1.x",
+    "blear.utils.date": "1.x",
+    "blear.utils.howdo": "1.x",
+    "blear.utils.number": "1.x",
+    "blear.utils.object": "1.x",
+    "blear.utils.string": "1.x",
+    "blear.utils.time": "1.x",
+    "blear.utils.typeis": "1.x"
   },
   "peerDependencies": {},
   "devDependencies": {
