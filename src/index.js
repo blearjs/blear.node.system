@@ -11,7 +11,7 @@
 
 var os = require('os');
 var childProcess = require('child_process');
-var howdo = require('blear.utils.howdo');
+var plan = require('blear.utils.plan');
 var collection = require('blear.utils.collection');
 var request = require('blear.node.request');
 var access = require('blear.utils.access');
@@ -84,7 +84,7 @@ exports.remoteIP = function (req, callback) {
         return callback(matches[0].split(',').pop().trim());
     }
 
-    howdo
+    plan
     // 从 IP_TAOBAO 处获取
         .task(function (done) {
             request({
@@ -109,7 +109,7 @@ exports.remoteIP = function (req, callback) {
             });
         })
 
-        .together(function (err, ip) {
+        .serial(function (err, ip) {
             callback(ip || '127.0.0.1');
         });
 };
@@ -148,7 +148,7 @@ exports.os = function () {
  * @param callback
  */
 exports.parseIP = function (ip, callback) {
-    howdo
+    plan
         .task(function (next) {
             request({
                 url: IP_TAOBAO,
@@ -180,7 +180,7 @@ exports.parseIP = function (ip, callback) {
                 });
             });
         })
-        .follow(function (err, info) {
+        .serial(function (err, info) {
             callback(info);
         });
 };
