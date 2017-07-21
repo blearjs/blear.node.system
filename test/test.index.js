@@ -33,5 +33,13 @@ describe('测试文件', function () {
             done();
         });
     });
+
+    it('.cpuUsage', function () {
+        console.log(system.cpuUsage());
+    });
+
+    it('.memoryUsage', function () {
+        console.log(system.memoryUsage());
+    });
 });
 

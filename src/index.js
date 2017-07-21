@@ -10,12 +10,12 @@
 'use strict';
 
 var os = require('os');
-var childProcess = require('child_process');
 var plan = require('blear.utils.plan');
 var collection = require('blear.utils.collection');
 var request = require('blear.node.request');
 var access = require('blear.utils.access');
 var typeis = require('blear.utils.typeis');
+var object = require('blear.utils.object');
 
 
 var osReleaseMap = require('./_os-release.json');
@@ -28,6 +28,8 @@ var IP_QQ = 'http://ip.qq.com/';
 var IP_TAOBAO = 'http://ip.taobao.com/service/getIpInfo2.php';
 var IP_LOOKUP = 'http://int.dpool.sina.com.cn/iplookup/iplookup.php';
 var REG_IP = /\d{1,3}(\.\d{1,3}){3}/;
+//Grab first CPU Measure
+var startMeasure = cpuAverage();
 
 
 /**
@@ -187,6 +189,32 @@ exports.parseIP = function (ip, callback) {
 
 
 /**
+ * CPU 占用率
+ * @returns {number}
+ */
+exports.cpuUsage = function () {
+    //Grab second Measure
+    var endMeasure = cpuAverage();
+
+    //Calculate the difference in idle and total time between the measures
+    var idleDifference = endMeasure.idle - startMeasure.idle;
+    var totalDifference = endMeasure.total - startMeasure.total;
+
+    //Calculate the average percentage CPU usage
+    return 1 - idleDifference / totalDifference;
+};
+
+
+/**
+ * 内存占用率
+ * @returns {Number}
+ */
+exports.memoryUsage = function () {
+    return process.memoryUsage().rss;
+};
+
+
+/**
  * 解析系统类型
  */
 function parseOSType() {
@@ -272,5 +300,32 @@ function getOSlanguage() {
     var locale = env.LANG || env.LANGUAGE || env.LC_ALL || env.LC_MESSAGES || env.LC_CTYPE;
 
     return locale || 'EN:UTF-8';
+}
+
+
+//Create function to get CPU information
+function cpuAverage() {
+
+    //Initialise sum of idle and time of cores and fetch CPU info
+    var totalIdle = 0, totalTick = 0;
+    var cpus = os.cpus();
+
+    //Loop through CPU cores
+    for (var i = 0, len = cpus.length; i < len; i++) {
+
+        //Select CPU core
+        var cpu = cpus[i];
+
+        //Total up the time in the cores tick
+        object.each(cpu.times, function (key, val) {
+            totalTick += val;
+        });
+
+        //Total up the idle time of the core
+        totalIdle += cpu.times.idle;
+    }
+
+    //Return the average Idle and Tick times
+    return {idle: totalIdle / cpus.length, total: totalTick / cpus.length};
 }
 
