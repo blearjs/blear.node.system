@@ -10,6 +10,7 @@
 'use strict';
 
 var os = require('os');
+var net = require('net');
 var plan = require('blear.utils.plan');
 var collection = require('blear.utils.collection');
 var request = require('blear.node.request');
@@ -93,7 +94,9 @@ exports.remoteIP = function (req, callback) {
                 url: IP_TAOBAO,
                 query: {
                     ip: 'myip'
-                }
+                },
+                browser: false,
+                debug: true
             }, function (err, body) {
                 if (err) {
                     return done(err);

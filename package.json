@@ -38,7 +38,7 @@
     "url": "https://github.com/blearjs/blear.node.system/issues"
   },
   "dependencies": {
-    "blear.node.request": "^2.0.3",
+    "blear.node.request": "^2.0.9",
     "blear.utils.access": "^1.0.5",
     "blear.utils.array": "^1.0.12",
     "blear.utils.collection": "^1.0.4",
